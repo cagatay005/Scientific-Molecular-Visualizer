@@ -39,12 +39,25 @@ Follow these steps to set up the project locally:
     ```bash
     python main.py
     ```
+!!! You can also use a one click to download:
+Second way to install. 
+
+### Standalone Version (Powered by PyInstaller)
+This application has been compiled into a standalone executable (`.exe`) using **PyInstaller**. This means you can run the application immediately without installing Python, RDKit, or any other dependencies.
+
+**[Download Latest Version (v1.0.0)](https://github.com/cagatay005/Scientific-Molecular-Visualizer/releases/latest/download/ScientificChemistApp.exe)**
+
+> **Important Note:** Since this application is not digitally signed with a paid certificate, **Windows Defender SmartScreen** may trigger a warning stating **"Windows protected your PC"** upon the first launch.
+> To bypass this and run the app:
+> 1. Click on **"More info"**.
+> 2. Click the **"Run anyway"** button. 
 
 ##  Usage Guide
 1.  **Search:** Enter a chemical compound name (English) in the sidebar (e.g., `Serotonin`) and press **"Analiz Et"** (Analyze).
 2.  **Interact:**
     * **Rotate:** Click and drag with the left mouse button.
-    * **Zoom:** Use the scroll wheel or right-click drag.
+    * **Transation:**  Click and drag with the middle mouse button(scroll wheel button).
+    * **Zoom/Scale:** Click and drag with the right click mouse button.
     * **Inspect:** Click on any atom or bond to view detailed properties in the info panel.
 3.  **Export:** Use the "Save as PDB" or "Save as XYZ" buttons to save the 3D structure to your disk.
 
