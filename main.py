@@ -12,6 +12,7 @@ import pubchempy as pcp
 import threading
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Path3DCollection
 import os # Dosya yolu işlemleri için
+import trimesh
 from data import ATOM_STYLES
 # --- AYARLAR ---
 ctk.set_appearance_mode("Light")
@@ -25,6 +26,7 @@ class ScientificChemistApp(ctk.CTk):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.atoms_data = []
+        self.bonds = []
         self.current_mol = None # Export için mevcut molekülü hafızada tutacağız
         self.current_mol_name = ""
         self.setup_ui()
@@ -62,17 +64,43 @@ class ScientificChemistApp(ctk.CTk):
         # DIŞA AKTAR (EXPORT KISMI)
         self.export_label = ctk.CTkLabel(self.sidebar_frame, text="DIŞA AKTAR (3D Veri)",
                                          font=ctk.CTkFont(size=14, weight="bold"), text_color="#333333", anchor="w")
-        self.export_label.grid(row=6, column=0, padx=20, pady=(20, 10), sticky="w")
+
         self.export_frame = ctk.CTkFrame(self.sidebar_frame, fg_color="transparent")
         self.export_frame.grid(row=7, column=0, padx=20, sticky="ew")
-        # PDB Kaydet Butonu
-        self.btn_save_pdb = ctk.CTkButton(self.export_frame, text="PDB Olarak Kaydet", command=lambda: self.save_molecule("pdb"),
-                                          fg_color="#27AE60", hover_color="#219653", height=30)
-        self.btn_save_pdb.pack(pady=5, fill="x")
-        # XYZ Kaydet Butonu
-        self.btn_save_xyz = ctk.CTkButton(self.export_frame, text="XYZ Olarak Kaydet", command=lambda: self.save_molecule("xyz"),
-                                          fg_color="#E67E22", hover_color="#D35400", height=30)
-        self.btn_save_xyz.pack(pady=5, fill="x")
+
+        # 1. Klasik Formatlar (RDKit doğrudan destekler)
+        self.btn_save_pdb = ctk.CTkButton(self.export_frame, text="PDB Kaydet (Koordinat)", command=lambda: self.save_molecule("pdb"),
+                                           fg_color="#27AE60", hover_color="#219653", height=30)
+        self.btn_save_pdb.pack(pady=3, fill="x")
+        
+        self.btn_save_xyz = ctk.CTkButton(self.export_frame, text="XYZ Kaydet (Koordinat)", command=lambda: self.save_molecule("xyz"),
+                                           fg_color="#E67E22", hover_color="#D35400", height=30)
+        self.btn_save_xyz.pack(pady=3, fill="x")
+        
+        # --- 3D MODEL/BASKI FORMATLARI (trimesh gerektirir) ---
+        
+        # Wireframe OBJ (Tel Kafes - Mevcut metot)
+        self.btn_save_obj_wire = ctk.CTkButton(self.export_frame, text="OBJ Wireframe Kaydet", 
+                                               command=lambda: self.save_molecule("obj_wire"),
+                                               fg_color="#00AEEF", hover_color="#0080B0", height=30)
+        self.btn_save_obj_wire.pack(pady=3, fill="x")
+
+        # Katı Modeller (3D baskı için)
+        self.btn_save_obj_mesh = ctk.CTkButton(self.export_frame, text="OBJ Mesh (Katı Model) Kaydet", 
+                                               command=lambda: self.save_molecule("obj_mesh"),
+                                               fg_color="#5B8A8A", hover_color="#456767", height=30)
+        self.btn_save_obj_mesh.pack(pady=3, fill="x")
+
+        self.btn_save_stl = ctk.CTkButton(self.export_frame, text="STL (3D Baskı İçin) Kaydet", 
+                                          command=lambda: self.save_molecule("stl"),
+                                          fg_color="#8E44AD", hover_color="#6A0DAD", height=30)
+        self.btn_save_stl.pack(pady=3, fill="x")
+
+        self.btn_save_glb = ctk.CTkButton(self.export_frame, text="GLB (Online Görüntü) Kaydet", 
+                                          command=lambda: self.save_molecule("glb"),
+                                          fg_color="#C0392B", hover_color="#A93226", height=30)
+        self.btn_save_glb.pack(pady=3, fill="x")
+    
         # Atom Bilgisi
         self.atom_info_frame = ctk.CTkFrame(self.sidebar_frame, fg_color="#E0E0E0")
         self.atom_info_frame.grid(row=9, column=0, padx=20, pady=20, sticky="s")
@@ -103,6 +131,10 @@ class ScientificChemistApp(ctk.CTk):
         # Butonları devre dışı bırakma kısmı
         self.btn_save_pdb.configure(state="disabled")
         self.btn_save_xyz.configure(state="disabled")
+        self.btn_save_obj_wire.configure(state="disabled")
+        self.btn_save_obj_mesh.configure(state="disabled")
+        self.btn_save_stl.configure(state="disabled")
+        self.btn_save_glb.configure(state="disabled")
         threading.Thread(target=self.perform_search, args=(name,), daemon=True).start()
     
     def perform_search(self, name):
@@ -132,6 +164,10 @@ class ScientificChemistApp(ctk.CTk):
         # Butonları tekrar aktif etme kısmı
         self.btn_save_pdb.configure(state="normal")
         self.btn_save_xyz.configure(state="normal")
+        self.btn_save_obj_wire.configure(state="normal")
+        self.btn_save_obj_mesh.configure(state="normal")
+        self.btn_save_stl.configure(state="normal")
+        self.btn_save_glb.configure(state="normal")
         color = "#2B5797" if success else "#C0392B"
         self.status_label.configure(text=message, text_color=color)
 
@@ -163,10 +199,117 @@ class ScientificChemistApp(ctk.CTk):
             )
             if file_path:
                 try:
-                    Chem.MolToXYZFile(self.current_mol, file_path)
-                    messagebox.showinfo("Başarılı", f"XYZ dosyası kaydedildi:\n{file_path}")
+                    Chem.MolToXYZFile(self.current_mol, file_path) 
                 except Exception as e:
-                    messagebox.showerror("Kaydetme Hatası", str(e))
+                    messagebox.showerror("Kaydetme Hatası", f"XYZ Kaydedilemedi: {str(e)}")
+                    file_path = None
+                if file_path:
+                    messagebox.showinfo("Başarılı", f"Dosya kaydedildi:\n{os.path.basename(file_path)}")
+        elif fmt == "obj_wire":
+            file_path = filedialog.asksaveasfilename(defaultextension=".obj", initialfile=f"{default_name}_wire_obj", filetypes=[("OBJ Wireframe", "*.obj")])
+            if file_path:
+                self.export_to_obj_wire(file_path)
+            if file_path:
+                messagebox.showinfo("Başarılı", f"Dosya kaydedildi:\n{os.path.basename(file_path)}")
+        elif fmt in ["obj_mesh", "stl", "glb"]:
+            ext = ".obj" if fmt == "obj_mesh" else (".stl" if fmt == "stl" else ".glb")
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=ext, 
+                initialfile=f"{default_name}_mesh{ext}", 
+                filetypes=[(f"{ext.upper()[1:]} File", f"*{ext}")]
+            )
+            
+            if file_path:
+                # Trimesh kullanarak katı modeli oluştur
+                mesh = self.create_molecular_mesh()
+                if mesh:
+                    # Modeli istediğimiz formata kaydet
+                    if fmt == "obj_mesh":
+                        mesh.export(file_path, file_type='obj')
+                    elif fmt == "stl":
+                        mesh.export(file_path, file_type='stl')
+                    elif fmt == "glb":
+                        mesh.export(file_path, file_type='glb')
+            if file_path:
+                messagebox.showinfo("Başarılı", f"Dosya kaydedildi:\n{os.path.basename(file_path)}")
+            else:
+             # Eğer kullanıcı kaydetmeyi iptal ettiyse Hata mesajı gösterme
+             if fmt not in ["pdb", "xyz"]: # İlk RDKit formatlarında try-except bloğu yok, bu yüzden iptal kontrolü burada yapıldı
+                pass
+    
+    def export_to_obj_wire(self, file_path):
+        """
+        Molekül verisini basit bir tel kafes (wireframe) OBJ dosyasına kaydeder.
+        Atomları köşe noktaları (v) ve bağları çizgiler (l) olarak yazar.
+        """
+        conf = self.current_mol.GetConformer()
+        
+        with open(file_path, 'w') as f:
+            f.write(f"o {self.current_mol_name}_wire\n") 
+
+            # Atom koordinatlarını yaz (v - vertex)
+            for i, atom in enumerate(self.current_mol.GetAtoms()):
+                pos = conf.GetAtomPosition(i)
+                f.write(f"v {pos.x:.6f} {pos.y:.6f} {pos.z:.6f}\n")
+
+            # Çizgileri (Bağlar) Yazma (1-tabanlı endeks)
+            for start, end in self.bonds:
+                start_idx = start + 1
+                end_idx = end + 1     
+                f.write(f"l {start_idx} {end_idx}\n")
+    
+    def create_molecular_mesh(self):
+        """
+        RDKit molekülünü, trimesh kullanarak 3D baskıya uygun katı bir ağ (mesh) modeline dönüştürür.
+        """
+        try:
+            conf = self.current_mol.GetConformer()
+            all_meshes = []
+            
+            # ATOM MESHLERİNİ OLUŞTURMA (KÜRELER)
+            # Atomları temsil eden kürelerin yarıçapı (3D baskı için boyutları makul tutalım)
+            ATOM_RADIUS = 0.5 
+            
+            for i, atom_data in enumerate(self.atoms_data):
+                pos = conf.GetAtomPosition(i)
+                center = [pos.x, pos.y, pos.z]
+                
+                # Küre oluşturma
+                sphere = trimesh.creation.icosphere(subdivisions=2, radius=ATOM_RADIUS)
+                sphere.apply_translation(center)
+                all_meshes.append(sphere)
+
+            # BAĞ MESHLERİNİ OLUŞTURMA (SİLİNDİRLER)
+            # Bağları temsil eden silindirlerin yarıçapı
+            BOND_RADIUS = 0.2
+            
+            for start, end in self.bonds:
+                p1_pos = conf.GetAtomPosition(start)
+                p2_pos = conf.GetAtomPosition(end)
+                p1 = np.array([p1_pos.x, p1_pos.y, p1_pos.z])
+                p2 = np.array([p2_pos.x, p2_pos.y, p2_pos.z])
+
+                # Silindir oluşturma
+                # p1'den p2'ye bir vektör oluşturur ve silindiri o vektör boyunca hizalar
+                transform = trimesh.geometry.align_vectors([0, 0, 1], p2 - p1)
+                transform[:3, 3] = p1 + (p2 - p1) / 2 # Silindiri merkeze taşıma
+                
+                # Bağ uzunluğunu hesaplama (silindir yüksekliği)
+                length = np.linalg.norm(p2 - p1)
+                cylinder = trimesh.creation.cylinder(radius=BOND_RADIUS, height=length)
+                cylinder.apply_transform(transform)
+                all_meshes.append(cylinder)
+
+            # TÜM MESHLERİ BİRLEŞTİRME (Tek bir katı model oluşturma)
+            if not all_meshes:
+                return None
+                
+            return trimesh.util.concatenate(all_meshes) # trimesh.creation.union kullanılarak tüm objeler tek, katı bir ağda birleşir
+
+        except Exception as e:
+            messagebox.showerror("3D Model Oluşturma Hatası", f"Model oluşturulurken bir sorun oluştu: {e}")
+            return None
+    
     def generate_3d_data(self, smiles):
         mol = Chem.MolFromSmiles(smiles)
         if not mol: return None, None, None
@@ -199,6 +342,7 @@ class ScientificChemistApp(ctk.CTk):
         self.ax.clear()
         self.ax.set_axis_off()
         self.atoms_data = atoms
+        self.bonds = bonds
         self.mol_weight_label.configure(text=f"Ağırlık: {mw:.2f} g/mol")
         self.formula_label.configure(text=f"Formül: {formula}")
         if not atoms: return
@@ -316,3 +460,4 @@ class ScientificChemistApp(ctk.CTk):
 if __name__ == "__main__":
     app = ScientificChemistApp()
     app.mainloop()
+    
