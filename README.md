@@ -1,7 +1,7 @@
 # 🧬 Scientific Molecular Visualizer
 > **Real-time 3D molecular analysis tool built with RDKit, PubChemPy, Matplotlib, and CustomTkinter**
 <p align="center">
-  <img src="project.gif" alt="Project Demo" width="100%" />
+  <img src="demo.gif" alt="Project Demo" width="100%" />
 </p>
 **Scientific Molecular Visualizer** is a modern, scientific desktop application that allows users to search by molecule name via PubChem, generate 3D coordinates, examine molecules by rotating them, obtain information by selecting atoms and bond types, and export data as PDB/XYZ.
 This project offers an interactive molecular visualization experience for chemists, students, science enthusiasts, and developers.
