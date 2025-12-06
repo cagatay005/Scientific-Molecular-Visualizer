@@ -28,8 +28,8 @@ The project is built using a modular Python architecture, highlighting several a
 Follow these steps to set up the project locally:
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-    cd your-repo-name
+    git clone https://github.com/cagatay005/Scientific-Molecular-Visualizer.git
+    cd Scientific-Molecular-Visualizer
     ```
 2.  **Install the required dependencies:**
     ```bash
@@ -37,7 +37,7 @@ Follow these steps to set up the project locally:
     ```
 3.  **Run the application:**
     ```bash
-    python molecular_visualizer.py
+    python main.py
     ```
 
 ##  Usage Guide
