@@ -19,7 +19,7 @@ ctk.set_default_color_theme("blue")
 class ScientificChemistApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Scientific Molecular Visualizer v1.1 - Export Edition")
+        self.title("Scientific Molecular Visualizer")
         self.geometry("1280x850")
         self.after(0, lambda: self.state('zoomed'))
         self.grid_columnconfigure(1, weight=1)
