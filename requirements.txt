@@ -3,3 +3,6 @@ matplotlib
 numpy
 pubchempy
 rdkit
+pillow
+scipy
+trimesh
