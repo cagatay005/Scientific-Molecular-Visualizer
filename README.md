@@ -49,7 +49,7 @@ Follow these steps to set up the project locally:
 3.  **Export:** Use the "Save as PDB" or "Save as XYZ" buttons to save the 3D structure to your disk.
 
 ##  Project Structure
-* `molecular_visualizer.py`: **Core Application.** Handles the GUI logic, Matplotlib embedding, threading, and main event loop.
+* `main.py`: **Core Application.** Handles the GUI logic, Matplotlib embedding, threading, and main event loop.
 * `data.py`: **Data Dictionary.** Contains the CPK color codes, atomic radii, and element metadata.
 * `demo.gif`: **Preview Asset.** Demonstration of the application in action.
 ##  License
