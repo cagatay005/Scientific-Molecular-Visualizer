@@ -1,72 +1,56 @@
-# 🧬 Scientific Molecular Visualizer
-> **Real-time 3D molecular analysis tool built with RDKit, PubChemPy, Matplotlib, and CustomTkinter**
-<p align="center">
-  <img src="demo.gif" alt="Project Demo" width="100%" />
-</p>
-**Scientific Molecular Visualizer** is a modern, scientific desktop application that allows users to search by molecule name via PubChem, generate 3D coordinates, examine molecules by rotating them, obtain information by selecting atoms and bond types, and export data as PDB/XYZ.
-This project offers an interactive molecular visualization experience for chemists, students, science enthusiasts, and developers.
----
-##  Features
-### 1. PubChem Integration
-→ Smart Search:** Type in a molecule name → Data is automatically retrieved from PubChem.
-→ Structure Generation:** Creates 3D structures via SMILES using RDKit.
-### 2. Full 3D Interaction
-→ Navigate: Rotate and zoom in a Matplotlib 3D environment.
-→ Atom Info: Click on an atom to view element information (Element, Atomic No, Hybridization).
-→ Bond Analysis: Click on a bond to view Single / Double / Triple / Aromatic bond types.
-→ Interaction Detection: Automatic detection of metallic / ionic interactions based on distance.
-### 3. True CPK Color System
-→ The full list of international CPK color standards is implemented for accurate scientific visualization.
-### 4. PDB / XYZ Export
-→ One-click Export:** Save your models as `molecule.pdb` or `molecule.xyz` via RDKit.
-### 5. Modern Interface
-→ UI: CustomTkinter Light Mode with a responsive sidebar and live property display.
----
-## 🛠 Installation
+#  Scientific Molecular Visualizer
+![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)
+![RDKit](https://img.shields.io/badge/Cheminformatics-RDKit-00CC00)
+![Matplotlib](https://img.shields.io/badge/Visualization-Matplotlib-11557c)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
+**Scientific Molecular Visualizer** is a sophisticated desktop application designed for real-time 3D visualization and analysis of chemical compounds. It leverages **PubChemPy** for data retrieval and **RDKit** for computational chemistry calculations (MMFF optimization), rendered within a modern **CustomTkinter** interface.
+![Application Demo](demo.gif)
 
-### 1. Clone the repository
+##  Overview
+This tool allows researchers, students, and developers to generate accurate 3D molecular structures simply by entering a compound name (e.g., *Caffeine, Aspirin*). Unlike static image viewers, it calculates atomic hybridization, detects bond types, and identifies potential ionic/metallic interactions in real-time.
 
-git clone [https://github.com//.git](https://github.com/cagatay005/Scientific-Molecular-Visualizer.git)
-cd molecular-visualizer
+##  Technical Architecture & Features
+The project is built using a modular Python architecture, highlighting several advanced integration techniques:
+* **Computational Chemistry (RDKit):**
+    * **SMILES to 3D:** Converts isomeric SMILES strings into 3D coordinate systems.
+    * **MMFF Optimization:** Utilizes the *Merck Molecular Force Field* to calculate the most stable 3D conformation (energy minimization).
+    * **Hybridization Analysis:** Automatically detects and displays atomic hybridization states (sp, sp2, sp3).
+* **Advanced Visualization (Matplotlib Embedding):**
+    * **GUI Integration:** Embeds interactive Matplotlib 3D plots directly into the CustomTkinter window using `FigureCanvasTkAgg`.
+    * **Event Handling:** Implements a "picking" mechanism (`pick_event`). Users can click on individual atoms or bonds to retrieve specific metadata (Element, Bond Type, Distance).
+    * **CPK Standards:** Atoms are rendered according to international **CPK coloring and radius standards**, defined in a custom `data.py` layer.
+* **Concurrency (Multithreading):**
+    * API requests (PubChem) and heavy mathematical optimizations run on background **Daemon Threads**, ensuring the UI remains responsive and fluid during calculations.
+* **Data Export:**
+    * Supports exporting processed molecular data to **.PDB** (Protein Data Bank) and **.XYZ** (Cartesian Coordinates) formats for use in other scientific software.
 
-2. Install Requirements
-pip install -r requirements.txt
-Main Dependencies: rdkit, pubchempy, numpy, matplotlib, customtkinter
-Note for RDKit: If you encounter issues installing RDKit via pip, using Conda is recommended:
-Bash
-conda install -c conda-forge rdkit
-3. Run the Application
-python molecular_visualizer.py
-The program will automatically start by loading the Caffeine molecule.
-• Project Structure
-MolecularVisualizer
-├── data.py                 # CPK color standard and atom styles
-├── molecular_visualizer.py # Main application
-├── demo.gif             # Demonstration GIF
-└── README.md               # Documentation
-• Technical Details
-🔹 3D Coordinate Generation (RDKit)
-The app uses a robust pipeline to generate accurate 3D models:
-AddHs(): Adds explicit hydrogens.
-EmbedMolecule(): Generates initial 3D coordinates.
-MMFFOptimizeMolecule(): Optimizes geometry using the MMFF force field.
-🔹 Bond Classification System
-Bonds are automatically detected and styled:
-Bond Type,Style,Color,Hex Code
-Single,Solid,Grey,#7F8C8D
-Double,Solid,Dark Blue,#2C3E50
-Triple,Solid,Black,#1A2530
-Aromatic,Dashed,Orange,#E67E22
-🔹 Selectable Atoms & Bonds
-Implemented using mpl_toolkits.mplot3d objects:
-Path3DCollection (atoms)
-Line3DCollection (bonds)
-Both configured with picker=True to allow mouse interaction.
-Controls:
-Input Action,Gesture,Function
-Left Mouse Button,Hold & Drag,Rotate (Orbit view around the molecule)
-Middle Mouse Button,Hold & Drag,Pan (Translate view / Move camera)
-Right Mouse Button,Hold & Drag,Zoom (Smooth zoom in/out)
+##  Installation
+Follow these steps to set up the project locally:
+1.  **Clone the repository:**
+    ```bash
+    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
+    cd your-repo-name
+    ```
+2.  **Install the required dependencies:**
+    ```bash
+    pip install customtkinter matplotlib numpy rdkit pubchempy
+    ```
+3.  **Run the application:**
+    ```bash
+    python molecular_visualizer.py
+    ```
 
-• License
-This project is released under the MIT License.
+##  Usage Guide
+1.  **Search:** Enter a chemical compound name (English) in the sidebar (e.g., `Serotonin`) and press **"Analiz Et"** (Analyze).
+2.  **Interact:**
+    * **Rotate:** Click and drag with the left mouse button.
+    * **Zoom:** Use the scroll wheel or right-click drag.
+    * **Inspect:** Click on any atom or bond to view detailed properties in the info panel.
+3.  **Export:** Use the "Save as PDB" or "Save as XYZ" buttons to save the 3D structure to your disk.
+
+##  Project Structure
+* `molecular_visualizer.py`: **Core Application.** Handles the GUI logic, Matplotlib embedding, threading, and main event loop.
+* `data.py`: **Data Dictionary.** Contains the CPK color codes, atomic radii, and element metadata.
+* `demo.gif`: **Preview Asset.** Demonstration of the application in action.
+##  License
+This project is licensed under the MIT License. See the `LICENSE` file for details.
